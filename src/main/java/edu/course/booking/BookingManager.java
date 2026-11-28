@@ -14,17 +14,21 @@ public class BookingManager {
     }
 
     public String processBooking(BookingRequest request) {
-         boolean soldOut = eventRepository.isSoldOut(request.getEventId());
-    if (soldOut) {
-        throw new IllegalStateException("Event is sold out");
-    }
+        if (!request.isValid()) {
+            throw new IllegalArgumentException("Invalid booking request");
+        }
 
-    int totalInCents = request.getTicketQuantity() * request.getPricePerTicketInCents();
-    String transactionId = paymentGateway.processPayment(totalInCents);
+        boolean soldOut = eventRepository.isSoldOut(request.getEventId());
+        if (soldOut) {
+            throw new IllegalStateException("Event is sold out");
+        }
 
-    eventRepository.saveBooking(new Booking(request, transactionId));
-    notificationService.sendConfirmation(request.getCustomerId(), transactionId);
+        int totalInCents = request.getTicketQuantity() * request.getPricePerTicketInCents();
+        String transactionId = paymentGateway.processPayment(totalInCents);
 
-    return transactionId;
+        eventRepository.saveBooking(new Booking(request, transactionId));
+        notificationService.sendConfirmation(request.getCustomerId(), transactionId);
+
+        return transactionId;
     }
 }
