@@ -14,6 +14,17 @@ public class BookingManager {
     }
 
     public String processBooking(BookingRequest request) {
-        throw new UnsupportedOperationException("Not implemented yet");
+         boolean soldOut = eventRepository.isSoldOut(request.getEventId());
+    if (soldOut) {
+        throw new IllegalStateException("Event is sold out");
+    }
+
+    int totalInCents = request.getTicketQuantity() * request.getPricePerTicketInCents();
+    String transactionId = paymentGateway.processPayment(totalInCents);
+
+    eventRepository.saveBooking(new Booking(request, transactionId));
+    notificationService.sendConfirmation(request.getCustomerId(), transactionId);
+
+    return transactionId;
     }
 }
