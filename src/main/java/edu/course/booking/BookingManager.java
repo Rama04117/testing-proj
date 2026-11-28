@@ -14,9 +14,9 @@ public class BookingManager {
     }
 
     public String processBooking(BookingRequest request) {
-        if (!request.isValid()) {
-            throw new IllegalArgumentException("Invalid booking request");
-        }
+        if (request == null || !request.isValid()) {
+        throw new IllegalArgumentException("Invalid booking request");
+    }
 
         boolean soldOut = eventRepository.isSoldOut(request.getEventId());
         if (soldOut) {
